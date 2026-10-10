@@ -1,4 +1,4 @@
-using TMPro;
+using UI;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -9,15 +9,18 @@ namespace Core
 
     public class TaskManager : MonoBehaviour
     {
+        [Header("Scriptable Object Quests Data")]
+        [SerializeField] private QuestTaskListSO questTaskListSO;
+
         [Header("UI Configuration")]
-        [SerializeField] private TextMeshProUGUI textTask;
+        [SerializeField] private UIFollowPlayer ui;
 
         [Header("Interactive Elements")]
         [SerializeField] private XRGrabInteractable objectA;
         [SerializeField] private XRSocketInteractor socketB;
-        [SerializeField] private LeverController lever;
+        [SerializeField] private VRLeverController lever;
 
-        [Header("Outlines (Компоненты подсветки)")]
+        [Header("Outlines")]
         [SerializeField] private Outline outlineA;
         [SerializeField] private Outline outlineB;
         [SerializeField] private Outline outlineLever;
@@ -44,25 +47,24 @@ namespace Core
         {
             ToggleAllOutlines(false);
 
+            QuestTask foundTask = questTaskListSO.Tasks.Find(task => task.Step == _currentStep);
+            ui.SetTextTask(foundTask.TaskDescription);
+
             switch (_currentStep)
             {
                 case QuestStep.GrabObjectA:
-                    textTask.text = "Возьмите объект A со стола.";
                     if (outlineA != null) outlineA.enabled = true;
                     break;
 
                 case QuestStep.PlaceInSocket:
-                    textTask.text = "Подойдите к объекту B и установите в него объект A.";
                     if (outlineB != null) outlineB.enabled = true;
                     break;
 
                 case QuestStep.ToggleLever:
-                    textTask.text = "Подойдите к рычагу и переведите его в положение «Включено».";
                     if (outlineLever != null) outlineLever.enabled = true;
                     break;
 
                 case QuestStep.Completed:
-                    textTask.text = "Тренировка завершена.";
                     break;
             }
         }
@@ -80,8 +82,15 @@ namespace Core
         {
             if (_currentStep == QuestStep.PlaceInSocket && args.interactableObject.transform == objectA.transform)
             {
-                objectA.enabled = false;
+                XRSocketInteractor socket = args.interactorObject as XRSocketInteractor;
+                Transform attachPoint = socket != null && socket.attachTransform != null
+                    ? socket.attachTransform
+                    : args.interactorObject.transform;
 
+                objectA.transform.position = attachPoint.position;
+                objectA.transform.rotation = attachPoint.rotation;
+
+                objectA.enabled = false;
                 _currentStep = QuestStep.ToggleLever;
                 UpdateCurrentStep();
             }

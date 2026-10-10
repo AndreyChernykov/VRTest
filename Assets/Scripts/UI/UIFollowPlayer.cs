@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 
 namespace UI
 {
@@ -6,9 +7,10 @@ namespace UI
     {
 
         [SerializeField] private Transform playerCamera;
-        [SerializeField] private float distance = 2.0f;     // Дистанция
-        [SerializeField] private float heightOffset = -0.2f; // Смещение по вертикали
-        [SerializeField] private float speed = 3.0f;        // Скорость
+        [SerializeField] private TextMeshProUGUI textTask;
+        [SerializeField] private float distance;
+        [SerializeField] private float heightOffset;
+        [SerializeField] private float speed;
 
         private void LateUpdate()
         {
@@ -22,6 +24,11 @@ namespace UI
             Vector3 lookDir = transform.position - playerCamera.position;
             lookDir.y = 0;
             transform.rotation = Quaternion.LookRotation(lookDir);
+        }
+
+        public void SetTextTask(string message)
+        {
+            textTask.text = message;
         }
     }
 
